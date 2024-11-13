@@ -1,0 +1,221 @@
+<!--
+################################################
+# Programmeerimine I
+# 2024/2025 sügissemester
+#
+# Projekt: SafeSend - Encrypted Messenger Application
+# Component: Main Interface Template
+#
+# Autorid:
+# Richard Mihhels, Oskar Pukk
+#
+# mõningane eeskuju:
+# WhatsApp, Telegram Web Interfaces
+#
+##################################################
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeSend - Secure Messaging</title>
+    <!-- Socket.IO client library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        /* Base reset styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Main layout styles */
+        body {
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            background-color: #f0f2f5;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            width: 300px;
+            background-color: #ffffff;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            background-color: #075e54;
+            color: white;
+        }
+
+        .chat-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .chat-item {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            cursor: pointer;
+        }
+
+        .chat-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Main chat area styles */
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background-color: #f0f2f5;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Message input area styles */
+        .message-input {
+            padding: 15px;
+            background-color: #f0f2f5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .message-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 20px;
+        }
+
+        .message-input button {
+            padding: 10px 20px;
+            background-color: #075e54;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        /* Message bubble styles */
+        .message {
+            margin: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 70%;
+        }
+
+        .message.sent {
+            background-color: #dcf8c6;
+            margin-left: auto;
+        }
+
+        .message.received {
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main container -->
+    <div class="container">
+        <!-- Sidebar for contacts and conversations -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>SafeSend</h2>
+            </div>
+            <div class="chat-list" id="chat-list">
+                <!-- Chat list will be populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Main chat area -->
+        <div class="main-chat">
+            <div class="chat-header">
+                <h3 id="current-chat">Select a chat</h3>
+            </div>
+            <div class="chat-messages" id="messages">
+                <!-- Messages will be populated dynamically -->
+            </div>
+            <div class="message-input">
+                <input type="text" id="message-input" placeholder="Type a message...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client-side messaging logic -->
+    <script>
+        // Initialize socket connection and key variables
+        const socket = io();
+        let current_recipient = null;
+        let public_key = null;
+        let private_key = null;
+
+        // Connection event handler
+        socket.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        // Key exchange event handler
+        socket.on('key_exchange', (data) => {
+            public_key = data.public_key;
+            socket.emit('key_exchange', { public_key: public_key });
+        });
+
+        // New message event handler
+        socket.on('new_message', (data) => {
+            const message_element = document.createElement('div');
+            message_element.classList.add('message');
+            message_element.classList.add(
+                data.sender_id === current_recipient ? 'received' : 'sent'
+            );
+            message_element.textContent = data.message;
+            
+            const messages_container = document.getElementById('messages');
+            messages_container.appendChild(message_element);
+            messages_container.scrollTop = messages_container.scrollHeight;
+        });
+
+        // Message sending function
+        function sendMessage() {
+            const message_input = document.getElementById('message-input');
+            const message_text = message_input.value;
+            
+            if (message_text && current_recipient) {
+                socket.emit('send_message', {
+                    message: message_text,
+                    recipient_id: current_recipient
+                });
+                message_input.value = '';
+            }
+        }
+
+        // Add enter key listener for message input
+        document.getElementById('message-input').addEventListener('keypress', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html> 

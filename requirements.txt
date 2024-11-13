@@ -1,0 +1,13 @@
+################################################
+# SafeSend Messenger Application
+# Required Python packages and versions
+################################################
+
+# Web framework
+flask==3.0.0
+
+# WebSocket support
+flask-socketio==5.3.6
+
+# Encryption
+rsa==4.9 
