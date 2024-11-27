@@ -3,11 +3,11 @@
 # Required Python packages and versions
 ################################################
 
-# Web framework
-flask==3.0.0
+# UI Components
+nicegui==1.4.6
 
-# WebSocket support
-flask-socketio==5.3.6
+# Async support
+asyncio==3.4.3
 
-# Encryption
-rsa==4.9 
+# UUID generation
+uuid==1.30
