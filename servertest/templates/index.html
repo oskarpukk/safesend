@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title>Chat App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            background: #f0f0f0;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #fff;
+            border-right: 1px solid #ccc;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            background: #0088cc;
+            color: #fff;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .username-set {
+            display: flex;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .username-set input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .username-set button {
+            margin-left: 5px;
+            padding: 8px 12px;
+            border: none;
+            background: #0088cc;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .user-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .user-list-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .user-list-item:hover {
+            background: #f9f9f9;
+        }
+
+        .user-list-item.selected {
+            background: #d0e8ff;
+        }
+
+        .user-list-item.unread {
+            background: #a6f3a6 !important;
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: #0088cc;
+            color: #fff;
+            padding: 15px;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-bubble {
+            max-width: 60%;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+            word-wrap: break-word;
+            position: relative;
+        }
+
+        .message-self {
+            align-self: flex-end;
+            background: #d2f8d2;
+        }
+
+        .message-other {
+            align-self: flex-start;
+            background: #ffffff;
+        }
+
+        .username-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background: #fff;
+            border-top: 1px solid #ccc;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .chat-input button {
+            margin-left: 10px;
+            padding: 12px;
+            background: #0088cc;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .chat-input button:hover {
+            background: #006fa3;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">Chats</div>
+        <div class="username-set">
+            <input type="text" id="usernameInput" placeholder="Set username...">
+            <button id="setUsernameBtn">Set</button>
+        </div>
+        <div class="user-list" id="userList"></div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-header" id="chatHeader">Global Chat</div>
+        <div class="messages" id="messages"></div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Type a message... (Press Enter)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+
+        let username = localStorage.getItem('chat_username') || "";
+        const messageInput = document.getElementById("messageInput");
+        const messagesDiv = document.getElementById("messages");
+        const userListDiv = document.getElementById("userList");
+        const chatHeader = document.getElementById("chatHeader");
+        const usernameInput = document.getElementById("usernameInput");
+        const setUsernameBtn = document.getElementById("setUsernameBtn");
+
+        let recipient = "Global Chat"; 
+        let allMessages = [];
+        let unread = {}; 
+
+        if (username) {
+            usernameInput.value = username;
+            socket.emit("set_username", { username: username });
+        }
+
+        setUsernameBtn.addEventListener("click", () => {
+            const newUsername = usernameInput.value.trim();
+            if (newUsername) {
+                username = newUsername;
+                localStorage.setItem('chat_username', username);
+                socket.emit("set_username", { username: username });
+            }
+        });
+
+        socket.on("connect", () => {
+            if (username) {
+                socket.emit("set_username", { username: username });
+            }
+        });
+
+        socket.on("user_list", (data) => {
+            const {users} = data;
+            userListDiv.innerHTML = "";
+
+            const globalItem = document.createElement("div");
+            globalItem.classList.add("user-list-item");
+            globalItem.textContent = "Global Chat";
+            globalItem.onclick = () => {
+                recipient = "Global Chat";
+                updateSelectedUserUI();
+                chatHeader.textContent = "Global Chat";
+                renderMessages();
+            };
+            userListDiv.appendChild(globalItem);
+
+            users.forEach(u => {
+                if (u === username) return; 
+                const userItem = document.createElement("div");
+                userItem.classList.add("user-list-item");
+                userItem.textContent = u;
+
+                userItem.onclick = () => {
+                    recipient = u;
+                    updateSelectedUserUI();
+                    chatHeader.textContent = "Chat with " + u;
+                    unread[u] = false;
+                    renderMessages();
+                };
+
+                userListDiv.appendChild(userItem);
+            });
+
+            updateSelectedUserUI();
+        });
+
+        socket.on("chat_message", (data) => {
+            allMessages.push(data);
+
+            if (data.recipient !== "Global Chat" && data.recipient === username && data.username !== username) {
+                if (recipient !== data.username) {
+                    unread[data.username] = true;
+                }
+            }
+
+            renderMessages();
+        });
+
+        function renderMessages() {
+            messagesDiv.innerHTML = "";
+            const filtered = allMessages.filter(m => {
+                if (recipient === "Global Chat" && m.recipient === "Global Chat") return true;
+                if (recipient !== "Global Chat") {
+                    if ((m.recipient === recipient && m.username === username) ||
+                        (m.recipient === username && m.username === recipient)) {
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            filtered.forEach(msg => {
+                const wrapper = document.createElement("div");
+                wrapper.classList.add("message-bubble");
+
+                if (msg.username === username) {
+                    wrapper.classList.add("message-self");
+                } else {
+                    wrapper.classList.add("message-other");
+                }
+
+                const userElement = document.createElement("div");
+                userElement.classList.add("username-label");
+                userElement.textContent = msg.username;
+                wrapper.appendChild(userElement);
+
+                const textNode = document.createTextNode(msg.message);
+                wrapper.appendChild(textNode);
+
+                messagesDiv.appendChild(wrapper);
+            });
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            updateSelectedUserUI();
+        }
+
+        function sendMessage() {
+            const msg = messageInput.value.trim();
+            if (msg && username) {
+                socket.emit("chat_message", { username: username, message: msg, recipient: recipient });
+                messageInput.value = "";
+            }
+        }
+
+        messageInput.addEventListener("keyup", (event) => {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        });
+
+        function updateSelectedUserUI() {
+            const items = userListDiv.querySelectorAll(".user-list-item");
+            items.forEach(item => {
+                item.classList.remove("selected", "unread");
+                if ((recipient === "Global Chat" && item.textContent === "Global Chat") ||
+                    (recipient !== "Global Chat" && item.textContent === recipient)) {
+                    item.classList.add("selected");
+                }
+
+                const userName = item.textContent;
+                if (userName !== "Global Chat" && unread[userName]) {
+                    item.classList.add("unread");
+                }
+            });
+        }
+    </script>
+</body>
+</html>
