@@ -3,20 +3,19 @@
 # Vajalikud Python paketid ja versioonid
 ################################################
 
-# Server Components
+# Serveri komponendid
 flask==2.0.1
 flask-socketio==5.1.1
 eventlet==0.33.0
 flask_cors==5.0.0
 
-# UI Komponentid
-nicegui==1.4.6
+# Krüptograafia teegid
+cryptography==3.4.7
+pynacl==1.4.0
 
-# Async toimimine
-asyncio==3.4.3
+# Võrgusuhtlus
+websockets==10.0
+requests==2.26.0
 
-# UUID genereerimine
-uuid==1.30
-
-# Krüptograafia
-rsa==4.9.0
+# Andmebaas
+sqlalchemy==1.4.23

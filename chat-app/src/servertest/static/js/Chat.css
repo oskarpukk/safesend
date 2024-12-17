@@ -1,214 +1,53 @@
-/* Base styles */
+/* Põhilised stiilid */
 body {
     margin: 0;
     padding: 0;
-    font-family: "Helvetica Neue", Arial, sans-serif;
-    min-height: 100vh;
-    background: #f0f0f0;
+    font-family: Arial, sans-serif;
 }
 
-/* Chat app container */
-.chat-app {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    background: #f0f0f0;
-    padding-top: 0px;
-}
-
-/* Chat tabs */
-.chat-tabs {
-    display: flex;
-    gap: 8px;
-    padding: 16px;
-    background: white;
-    border-bottom: 1px solid #ddd;
-    overflow-x: auto;
-}
-
-.tab-button {
-    padding: 8px 16px;
-    border-radius: 20px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.tab-button:hover {
-    background: #f0f0f0;
-}
-
-.tab-button.active {
-    background: #0088cc;
-    color: white;
-}
-
-/* Chat main area */
-.chat-main {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-    width: 100%;
-}
-
-/* Sidebar styles */
-.sidebar {
-    width: 350px;
-    min-width: 350px;
-    background: #fff;
-    border-right: 1px solid #ccc;
-    display: flex;
-    flex-direction: column;
-}
-
-.sidebar-header {
-    background: #0088cc;
-    color: #fff;
-    padding: 15px;
-    text-align: center;
-    font-weight: bold;
-    font-size: 18px;
-}
-
-.username-set {
-    display: none;
-}
-
-.user-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 15px;
-}
-
-.user-item {
-    padding: 10px;
-    margin-bottom: 5px;
-    cursor: pointer;
-    border-radius: 4px;
-}
-
-.user-item:hover {
-    background: #f0f0f0;
-}
-
-.user-item.active {
-    background: #e3f2fd;
-}
-
-/* Chat container styles */
+/* Vestluse konteiner */
 .chat-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: #fff;
-    width: calc(100% - 350px);
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
-.chat-header {
-    background: #f8f9fa;
-    padding: 15px;
-    border-bottom: 1px solid #ccc;
-    font-weight: bold;
-}
-
+/* Sõnumite ala */
 .messages {
-    flex: 1;
+    height: 400px;
     overflow-y: auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.message {
-    margin: 10px;
+    border: 1px solid #ccc;
     padding: 10px;
-    border-radius: 10px;
-    max-width: 70%;
+    margin-bottom: 20px;
 }
 
-.message.self {
-    background-color: #dcf8c6;
-    margin-left: auto;
+/* Üksiku sõnumi stiil */
+.message {
+    margin: 10px 0;
+    padding: 10px;
+    background-color: #f0f0f0;
+    border-radius: 5px;
 }
 
-.message.other {
-    background-color: #fff;
-    margin-right: auto;
-}
-
-.username {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.message-content {
-    word-break: break-word;
-}
-
-/* Chat input styles */
-.chat-input {
-    padding: 20px;
-    border-top: 1px solid #ccc;
+/* Sisestusvormi stiilid */
+form {
     display: flex;
     gap: 10px;
-    background: white;
 }
 
-.chat-input input {
+input {
     flex: 1;
     padding: 10px;
     border: 1px solid #ccc;
-    border-radius: 20px;
-    font-size: 14px;
+    border-radius: 5px;
 }
 
-.chat-input button {
+button {
     padding: 10px 20px;
-    background: #0088cc;
+    background-color: #007bff;
     color: white;
     border: none;
-    border-radius: 20px;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 14px;
-}
-
-.chat-input button:hover {
-    background: #006fa3;
-}
-
-/* Unread message indicator */
-.unread-count {
-    background: #ff4444;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 12px;
-    margin-left: 5px;
-}
-
-/* Private tabs container */
-.private-tabs {
-    display: flex;
-    gap: 8px;
-}
-
-/* Add these new styles */
-.user-header {
-    position: fixed;
-    top: 0;
-    right: 0;
-    padding: 10px 20px;
-    background: #0088cc;
-    color: white;
-    border-bottom-left-radius: 8px;
-    z-index: 1000;
-    font-size: 14px;
-}
-
-.user-header strong {
-    font-weight: bold;
-    margin-left: 5px;
 }
   
