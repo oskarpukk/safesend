@@ -78,4 +78,10 @@ def handle_chat_message(data):
             socketio.emit("chat_message", {"username": "System", "message": f"User {recipient} is not available.", "recipient": username}, to=sid)
 
 if __name__ == "__main__":
-    socketio.run(app, host="192.168.1.226", port=5000)
+    # Debug mode should be False for production
+    app.debug = False
+    # Allow external connections and specify your IP
+    socketio.run(app, 
+                 host='0.0.0.0',  # or keep "0.0.0.0" to listen on all interfaces
+                 port=5001,
+                 allow_unsafe_werkzeug=True)  # Only if needed for testing
