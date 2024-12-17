@@ -1,13 +1,22 @@
 ################################################
 # SafeSend Messenger Application
-# Required Python packages and versions
+# Vajalikud Python paketid ja versioonid
 ################################################
 
-# UI Components
+# Server Components
+flask==2.0.1
+flask-socketio==5.1.1
+eventlet==0.33.0
+flask_cors==5.0.0
+
+# UI Komponentid
 nicegui==1.4.6
 
-# Async support
+# Async toimimine
 asyncio==3.4.3
 
-# UUID generation
+# UUID genereerimine
 uuid==1.30
+
+# Krüptograafia
+rsa==4.9.0
