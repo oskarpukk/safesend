@@ -16,12 +16,11 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import './Chat.css';
-import CryptoJS from 'crypto-js';
 
 const Chat = () => {
     const [socket, setSocket] = useState(null);
     const [username, setUsername] = useState('');
-    const [privateKey, setPrivateKey] = useState('');
+    const [privateKey, setPrivateKey] = useState(null);
     const [message, setMessage] = useState('');
     const [chatLogs, setChatLogs] = useState({
         'Global Chat': []
@@ -61,19 +60,16 @@ const Chat = () => {
     };
 
     useEffect(() => {
-        const newSocket = io('http://172.25.249.164:3002');
-        setSocket(newSocket);
-
-        return () => newSocket.close();
-    }, []);
-
-    useEffect(() => {
-        if (!socket || username) return;
-        
-        const credentials = promptForCredentials();
-        setUsername(credentials.username);
-        setPrivateKey(credentials.privateKey);
-    }, [socket, username]);
+        if (!username || !privateKey) {
+            const credentials = promptForCredentials();
+            setUsername(credentials.username);
+            setPrivateKey(credentials.privateKey);
+            
+            // Connect to the Python server
+            const newSocket = io('http://localhost:3000');  // Use localhost and port 3000
+            setSocket(newSocket);
+        }
+    }, [username, privateKey]);
 
     useEffect(() => {
         if (!socket || !username) return;
@@ -116,22 +112,24 @@ const Chat = () => {
 
         socket.on('chat_message', (data) => {
             console.log('Received message:', data);
-            try {
-                const decryptedMessage = CryptoJS.AES.decrypt(data.message, privateKey.toString()).toString(CryptoJS.enc.Utf8);
-                console.log('Decrypted message:', decryptedMessage);
-                setChatLogs(prev => {
-                    const recipient = data.recipient || 'Global Chat';
-                    const chatKey = recipient === 'Global Chat' ? 'Global Chat' : 
-                                  (data.self ? data.recipient : data.sender);
-                    
-                    return {
-                        ...prev,
-                        [chatKey]: [...(prev[chatKey] || []), { sender: data.sender, message: decryptedMessage, self: data.self }]
-                    };
-                });
-            } catch (error) {
-                console.error("Decryption error:", error);
-            }
+            
+            setChatLogs(prev => {
+                const recipient = data.recipient || 'Global Chat';
+                const chatKey = recipient === 'Global Chat' ? 'Global Chat' : 
+                              (data.self ? data.recipient : data.sender);
+                
+                return {
+                    ...prev,
+                    [chatKey]: [
+                        ...(prev[chatKey] || []),
+                        { 
+                            sender: data.sender, 
+                            message: data.message,  // Message is already decrypted by server
+                            self: data.self 
+                        }
+                    ]
+                };
+            });
         });
 
         return () => {
@@ -156,10 +154,13 @@ const Chat = () => {
             console.error("Encryption key is not set.");
             return;
         }
-        const keyString = privateKey.toString();
-        const encryptedMessage = CryptoJS.AES.encrypt(message, keyString).toString();
-        console.log("Sending encrypted message:", encryptedMessage);
-        socket.emit('chat_message', { recipient: currentRecipient, message: encryptedMessage });
+        
+        // Send unencrypted message to server - server will handle encryption
+        socket.emit('chat_message', { 
+            recipient: currentRecipient, 
+            message: message
+        });
+        
         setMessage('');
     };
 
@@ -217,7 +218,7 @@ const Chat = () => {
                             type="text"
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
-                            onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+                            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
                             placeholder="Type a message... (Press Enter)"
                         />
                         <button onClick={sendMessage}>Send</button>
