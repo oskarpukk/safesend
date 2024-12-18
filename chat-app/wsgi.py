@@ -1,5 +1,7 @@
+import eventlet
+eventlet.monkey_patch()
+
 from src.servertest.static.js.server import app, socketio
-import os
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))

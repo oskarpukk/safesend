@@ -32,7 +32,7 @@ app = Flask(__name__, static_folder='build', static_url_path='')
 CORS(app, origins=["https://safesend-chi.vercel.app"])
 socketio = SocketIO(app, 
                    cors_allowed_origins=["https://safesend-chi.vercel.app"],
-                   async_mode='gevent',
+                   async_mode='eventlet',
                    ping_timeout=60,
                    ping_interval=25)
 
