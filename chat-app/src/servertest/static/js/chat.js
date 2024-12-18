@@ -67,9 +67,19 @@ const Chat = () => {
             
             // Connect to the Python server
             const SOCKET_URL = process.env.NODE_ENV === 'production' 
-                ? 'https://safesend-chi.vercel.app/'  // Update this with your Render URL
+                ? 'https://safesend-bkj2.onrender.com'  // Your Render backend URL
                 : 'http://localhost:3000';
-            const newSocket = io(SOCKET_URL);
+            const newSocket = io(SOCKET_URL, {
+                transports: ['websocket'],
+                cors: {
+                    origin: "https://safesend-chi.vercel.app",
+                    credentials: true
+                },
+                reconnection: true,
+                reconnectionDelay: 1000,
+                reconnectionDelayMax: 5000,
+                reconnectionAttempts: 5
+            });
             setSocket(newSocket);
         }
     }, [username, privateKey]);
