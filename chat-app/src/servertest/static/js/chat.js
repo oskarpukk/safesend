@@ -66,7 +66,10 @@ const Chat = () => {
             setPrivateKey(credentials.privateKey);
             
             // Connect to the Python server
-            const newSocket = io('http://localhost:3000');  // Use localhost and port 3000
+            const SOCKET_URL = process.env.NODE_ENV === 'production' 
+                ? 'https://safesend-chi.vercel.app/'  // Update this with your Render URL
+                : 'http://localhost:3000';
+            const newSocket = io(SOCKET_URL);
             setSocket(newSocket);
         }
     }, [username, privateKey]);

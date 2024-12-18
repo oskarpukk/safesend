@@ -29,8 +29,12 @@ logger = logging.getLogger(__name__)
 
 # Initsialiseerime Flask ja SocketIO
 app = Flask(__name__, static_folder='build', static_url_path='')
-CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')  # Lisatud async_mode
+CORS(app, origins=["https://your-vercel-app.vercel.app"])
+socketio = SocketIO(app, 
+                   cors_allowed_origins=["https://your-vercel-app.vercel.app"],
+                   async_mode='eventlet')
+
+port = int(os.environ.get("PORT", 3000))
 
 # Salvesta kasutaja andmed koos nende võtmetega
 all_users = {}  # {sid: {'username': str, 'private_key': int, 'public_key': int, 'encryption': {username: MessageEncryption()}}}
@@ -210,6 +214,6 @@ def handle_message(data):
 if __name__ == '__main__':
     try:
         logger.info("Käivitan serveri...")
-        socketio.run(app, debug=True, host="0.0.0.0", port=3000)
+        socketio.run(app, debug=True, host="172.20.10.8", port=port)
     except Exception as e:
         logger.error(f"Serveri viga: {str(e)}")
