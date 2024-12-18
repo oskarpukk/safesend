@@ -1,1 +1,1 @@
-web: gunicorn --worker-class eventlet -w 1 'src.servertest.static.js.server:app'
+web: gunicorn --worker-class eventlet -w 1 wsgi:app
