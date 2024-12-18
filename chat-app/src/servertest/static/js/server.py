@@ -31,10 +31,8 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__, static_folder='build', static_url_path='')
 CORS(app, origins=["https://safesend-chi.vercel.app"])
 socketio = SocketIO(app, 
-                   cors_allowed_origins=["https://safesend-chi.vercel.app"],
-                   async_mode='gevent',
-                   ping_timeout=60,
-                   ping_interval=25)
+                   cors_allowed_origins="*",
+                   async_mode='eventlet')
 
 port = int(os.environ.get("PORT", 3000))
 
