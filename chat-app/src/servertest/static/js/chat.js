@@ -66,7 +66,7 @@ const Chat = () => {
             setPrivateKey(credentials.privateKey);
             
             // Connect to the Python server
-            const newSocket = io('http://localhost:3000');  // Use localhost and port 3000
+            const newSocket = io('https://safesend.onrender.com');  // Use localhost and port 3000
             setSocket(newSocket);
         }
     }, [username, privateKey]);
