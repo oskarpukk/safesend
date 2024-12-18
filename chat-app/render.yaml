@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: safesend-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --worker-class eventlet -w 1 'src.servertest.static.js.server:app'
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
