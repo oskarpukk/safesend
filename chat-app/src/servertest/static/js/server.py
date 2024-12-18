@@ -29,10 +29,12 @@ logger = logging.getLogger(__name__)
 
 # Initsialiseerime Flask ja SocketIO
 app = Flask(__name__, static_folder='build', static_url_path='')
-CORS(app, origins=["https://your-vercel-app.vercel.app"])
+CORS(app, origins=["https://safesend-chi.vercel.app"])
 socketio = SocketIO(app, 
-                   cors_allowed_origins=["https://your-vercel-app.vercel.app"],
-                   async_mode='eventlet')
+                   cors_allowed_origins=["https://safesend-chi.vercel.app"],
+                   async_mode='eventlet',
+                   ping_timeout=60,
+                   ping_interval=25)
 
 port = int(os.environ.get("PORT", 3000))
 
@@ -213,7 +215,11 @@ def handle_message(data):
 
 if __name__ == '__main__':
     try:
-        logger.info("Käivitan serveri...")
-        socketio.run(app, debug=True, host="172.20.10.8", port=port)
+        logger.info("Starting server...")
+        port = int(os.environ.get("PORT", 3000))
+        socketio.run(app, 
+                    host="0.0.0.0",
+                    port=port,
+                    debug=True)
     except Exception as e:
-        logger.error(f"Serveri viga: {str(e)}")
+        logger.error(f"Server error: {str(e)}")
