@@ -45,9 +45,9 @@ def serve():
 @socketio.on('connect')
 def handle_connect():
     logger.info(f"Klient ühendas: {request.sid}")
-    # Saada praegune kasutajate nimekiri äsja ühendatud kliendile
+    # Modify the format of the user list
     emit('user_list', {
-        'all_users': list(username_to_sid.keys())
+        'users': list(username_to_sid.keys())  # Change 'all_users' to 'users'
     })
 
 @socketio.on('disconnect')
@@ -58,9 +58,9 @@ def handle_disconnect():
         del username_to_sid[username]
         del all_users[sid]
         emit('user_left', {'username': username}, broadcast=True)
-        # Edasta uuendatud kasutajate nimekiri
+        # Update the format here too
         emit('user_list', {
-            'all_users': list(username_to_sid.keys())
+            'users': list(username_to_sid.keys())  # Change 'all_users' to 'users'
         }, broadcast=True)
     logger.info(f"Klient lahkus: {request.sid}")
 
@@ -104,7 +104,9 @@ def handle_registration(data):
         emit('user_joined', {'username': username}, broadcast=True)
         
         # Send current user list to new user
-        emit('user_list', {'all_users': list(username_to_sid.keys())}, to=sid)
+        emit('user_list', {
+            'users': list(username_to_sid.keys())  # Change 'all_users' to 'users'
+        }, to=sid)
         
         # Saada kliendile tema enda public_key ja teiste kasutajate public_key-d
         other_all_users_info = {}
@@ -210,6 +212,6 @@ def handle_message(data):
 if __name__ == '__main__':
     try:
         logger.info("Käivitan serveri...")
-        socketio.run(app, debug=True, host="0.0.0.0", port=5000)
+        socketio.run(app, debug=True, host="172.20.10.2", port=3000)
     except Exception as e:
         logger.error(f"Serveri viga: {str(e)}")

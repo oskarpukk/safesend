@@ -22,9 +22,7 @@ const Chat = () => {
     const [username, setUsername] = useState('');
     const [privateKey, setPrivateKey] = useState(null);
     const [message, setMessage] = useState('');
-    const [chatLogs, setChatLogs] = useState({
-        'Global Chat': []
-    });
+    const [chatLogs, setChatLogs] = useState({});
     const [users, setUsers] = useState([]);
     const [currentRecipient, setCurrentRecipient] = useState('Global Chat');
 
@@ -66,7 +64,7 @@ const Chat = () => {
             setPrivateKey(credentials.privateKey);
             
             // Connect to the Python server
-            const newSocket = io('https://safesend.onrender.com');  // Use localhost and port 3000
+            const newSocket = io('http://172.20.10.2:3000');  // Use localhost and port 3000
             setSocket(newSocket);
         }
     }, [username, privateKey]);
@@ -88,7 +86,15 @@ const Chat = () => {
 
         socket.on('user_list', (data) => {
             console.log('Received user list:', data);
-            setUsers(data.users.filter(user => user !== username));
+            if (data && data.users) {
+                // Filter out the current user from the list
+                const filteredUsers = data.users.filter(user => user !== username);
+                console.log('Filtered users:', filteredUsers);
+                setUsers(filteredUsers);
+            } else {
+                console.warn('Received invalid user list format:', data);
+                setUsers([]);
+            }
         });
 
         socket.on('user_joined', (data) => {
@@ -112,24 +118,23 @@ const Chat = () => {
 
         socket.on('chat_message', (data) => {
             console.log('Received message:', data);
+            if (data.sender === username) return;
             
-            setChatLogs(prev => {
-                const recipient = data.recipient || 'Global Chat';
-                const chatKey = recipient === 'Global Chat' ? 'Global Chat' : 
-                              (data.self ? data.recipient : data.sender);
-                
-                return {
-                    ...prev,
-                    [chatKey]: [
-                        ...(prev[chatKey] || []),
-                        { 
-                            sender: data.sender, 
-                            message: data.message,  // Message is already decrypted by server
-                            self: data.self 
-                        }
-                    ]
-                };
-            });
+            const chatKey = data.recipient === 'Global Chat' 
+                ? 'Global Chat' 
+                : (data.sender === username ? data.recipient : data.sender);
+            
+            setChatLogs(prev => ({
+                ...prev,
+                [chatKey]: [
+                    ...(prev[chatKey] || []),
+                    {
+                        sender: data.sender,
+                        message: data.message,
+                        self: false
+                    }
+                ]
+            }));
         });
 
         return () => {
@@ -150,18 +155,38 @@ const Chat = () => {
 
     const sendMessage = () => {
         if (!message.trim()) return;
-        if (!privateKey) {
-            console.error("Encryption key is not set.");
-            return;
-        }
         
-        // Send unencrypted message to server - server will handle encryption
-        socket.emit('chat_message', { 
-            recipient: currentRecipient, 
+        console.log('Sending message:', {
+            recipient: currentRecipient,
             message: message
         });
-        
+
+        // Add message to local chat logs immediately
+        setChatLogs(prev => ({
+            ...prev,
+            [currentRecipient]: [
+                ...(prev[currentRecipient] || []),
+                {
+                    sender: username,
+                    message: message.trim(),
+                    self: true
+                }
+            ]
+        }));
+
+        socket.emit('chat_message', {
+            recipient: currentRecipient,
+            message: message.trim()
+        });
+
         setMessage('');
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
     };
 
     if (!socket || !username) {
@@ -218,8 +243,8 @@ const Chat = () => {
                             type="text"
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                            placeholder="Type a message... (Press Enter)"
+                            onKeyPress={handleKeyPress}
+                            placeholder="Type a message..."
                         />
                         <button onClick={sendMessage}>Send</button>
                     </div>
