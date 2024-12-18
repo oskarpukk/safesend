@@ -19,3 +19,5 @@ requests==2.26.0
 
 # Andmebaas
 sqlalchemy==1.4.23
+
+gunicorn

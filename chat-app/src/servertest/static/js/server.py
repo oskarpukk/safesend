@@ -210,6 +210,6 @@ def handle_message(data):
 if __name__ == '__main__':
     try:
         logger.info("Käivitan serveri...")
-        socketio.run(app, debug=True, host="0.0.0.0", port=3000)
+        socketio.run(app, debug=True, host="0.0.0.0", port=5000)
     except Exception as e:
         logger.error(f"Serveri viga: {str(e)}")

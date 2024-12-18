@@ -1,0 +1,19 @@
+{
+  "name": "safesend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oskarpukk/safesend.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oskarpukk/safesend/issues"
+  },
+  "homepage": "https://github.com/oskarpukk/safesend#readme",
+  "description": ""
+}
