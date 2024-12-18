@@ -1,18 +1,7 @@
-################################################
-# SafeSend Messenger Application
-# Vajalikud Python paketid ja versioonid
-################################################
-
 Flask==2.0.1
 Flask-SocketIO==5.1.1
 Flask-CORS==3.0.10
 python-socketio==5.4.0
-gevent==21.12.0
-gevent-websocket==0.10.1
 gunicorn==20.1.0
 python-dotenv==0.19.0
-cryptography==3.4.7
-pynacl==1.4.0
-websockets==10.0
-requests==2.26.0
-sqlalchemy==1.4.23
+Werkzeug==2.0.3
