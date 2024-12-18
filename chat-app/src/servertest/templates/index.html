@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <title>Chat App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.6.1/socket.io.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">Chats</div>
+        <div class="username-set">
+            <input type="text" id="usernameInput" placeholder="Set username...">
+            <button id="setUsernameBtn">Set</button>
+        </div>
+        <div class="user-list" id="userList"></div>
+    </div>
+
+    <div class="chat-container">
+        <div class="chat-header" id="chatHeader">Global Chat</div>
+        <div class="messages" id="messages"></div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Type a message... (Press Enter)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+</html>
