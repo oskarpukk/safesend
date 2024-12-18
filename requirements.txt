@@ -3,27 +3,15 @@
 # Vajalikud Python paketid ja versioonid
 ################################################
 
-# Serveri komponendid
-flask==2.0.1
-flask-socketio==5.1.1
-eventlet==0.33.0
-flask_cors==5.0.0
-
-# Krüptograafia teegid
-cryptography==3.4.7
-pynacl==1.4.0
-
-# Võrgusuhtlus
-websockets==10.0
-requests==2.26.0
-
-# Andmebaas
-sqlalchemy==1.4.23
-
-
+Flask==2.0.1
+Flask-SocketIO==5.1.1
+Flask-CORS==3.0.10
 python-socketio==5.4.0
 eventlet==0.33.3
 gunicorn==20.1.0
 python-dotenv==0.19.0
-gevent==21.12.0
-gevent-websocket==0.10.1
+cryptography==3.4.7
+pynacl==1.4.0
+websockets==10.0
+requests==2.26.0
+sqlalchemy==1.4.23
