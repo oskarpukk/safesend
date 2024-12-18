@@ -115,36 +115,24 @@ def handle_registration(data):
 
 @socketio.on('chat_message')
 def handle_message(data):
-    sid = request.sid
-    if sid not in users:
-        return {'error': 'User not registered'}
-        
-    sender = users[sid]
-    recipient_username = data.get('recipient')
-    message = data.get('message', '').strip()
-    
     try:
+        sid = request.sid
+        if sid not in users:
+            logger.error("User not registered")
+            return {'error': 'User not registered'}
+            
+        sender = users[sid]
+        recipient_username = data.get('recipient')
+        message = data.get('message', '').strip()
+        
         if not message:
+            logger.error("Empty message")
             return {'error': 'Message cannot be empty'}
 
         logger.info(f"Processing message from {sender['username']} to {recipient_username}")
         
         if recipient_username == "Global Chat":
-            # Send to all users
-            for user_sid, user_data in users.items():
-                if user_sid != sid:  # Don't send to self
-                    try:
-                        encrypted_message = sender['encryption'][user_data['username']].encrypt(message)
-                        emit('chat_message', {
-                            'sender': sender['username'],
-                            'message': encrypted_message,
-                            'recipient': 'Global Chat',
-                            'self': False
-                        }, to=user_sid)
-                    except Exception as e:
-                        logger.error(f"Error sending to {user_data['username']}: {str(e)}")
-            
-            # Send confirmation to sender
+            # Send to sender first
             emit('chat_message', {
                 'sender': sender['username'],
                 'message': message,
@@ -152,37 +140,47 @@ def handle_message(data):
                 'self': True
             }, to=sid)
             
+            # Then broadcast to others
+            for user_sid, user_data in users.items():
+                if user_sid != sid:
+                    try:
+                        emit('chat_message', {
+                            'sender': sender['username'],
+                            'message': message,
+                            'recipient': 'Global Chat',
+                            'self': False
+                        }, to=user_sid)
+                    except Exception as e:
+                        logger.error(f"Failed to send to {user_data['username']}: {str(e)}")
+                        continue
+            
+            return {'success': True}
+            
         else:
-            # Private chat
-            if recipient_username in username_to_sid:
-                recipient_sid = username_to_sid[recipient_username]
-                
-                try:
-                    # Encrypt and send to recipient
-                    encrypted_message = sender['encryption'][recipient_username].encrypt(message)
-                    emit('chat_message', {
-                        'sender': sender['username'],
-                        'message': encrypted_message,
-                        'recipient': recipient_username,
-                        'self': False
-                    }, to=recipient_sid)
-                    
-                    # Send confirmation to sender
-                    emit('chat_message', {
-                        'sender': sender['username'],
-                        'message': message,
-                        'recipient': recipient_username,
-                        'self': True
-                    }, to=sid)
-                    
-                except Exception as e:
-                    logger.error(f"Error sending private message: {str(e)}")
-                    return {'error': 'Failed to send private message'}
-            else:
+            if recipient_username not in username_to_sid:
+                logger.error(f"Recipient not found: {recipient_username}")
                 return {'error': 'Recipient not found'}
-        
-        return {'success': True}
-        
+                
+            recipient_sid = username_to_sid[recipient_username]
+            
+            # Send to recipient
+            emit('chat_message', {
+                'sender': sender['username'],
+                'message': message,
+                'recipient': recipient_username,
+                'self': False
+            }, to=recipient_sid)
+            
+            # Send confirmation to sender
+            emit('chat_message', {
+                'sender': sender['username'],
+                'message': message,
+                'recipient': recipient_username,
+                'self': True
+            }, to=sid)
+            
+            return {'success': True}
+            
     except Exception as e:
         logger.error(f"Message handling error: {str(e)}")
         return {'error': str(e)}
