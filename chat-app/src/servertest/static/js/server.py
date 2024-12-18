@@ -222,4 +222,4 @@ if __name__ == '__main__':
                     port=port,
                     debug=True)
     except Exception as e:
-        logger.error(f"Server error: {str(e)}")
+        logger.error(f"Serveri viga: {str(e)}")
